@@ -12,18 +12,17 @@ class ShippingService{
     // Create the shipment request and make the service call
     public function createShipment(){
         $client = curlClient::instance();
-
         $requestParams = _buildCreateShipmentRequestParams();
-        $response = $this->_callService($jsonRequest, $this->FLCLShippingServiceURL);
-        return $response;
+        $response = $client->makeRequest("POST", FLCLShippingServiceURL, array('Content-Type:application/json'), $requestParams);
+         
+        return $response[0];
     }
 
     // get shipment by id
     public function getShipment()
     {
         $shipmentID = 123456;
-        $url = "/v1/shipments/" .;
-
+        $client = curlClient::instance();
     }
 
     // build out the json shipment request
