@@ -1,27 +1,33 @@
 
 <?php
-require_once curlClient.php;
 
-class ShippingService{
+require_once("curlClient.php");
+
+class ShippingService
+{
 
     const appID = "6a7d75ed471a52f7bb81f8506ae78f13";
     const restAPIKey = "3ea182891f031ca339adf11c4336a68df9f800bd";
-    const FLCLShippingServiceURL = "http://developers.flavorcloud.com/api/Shipments";
-
+    const FLCLShippingServiceURL = "http://api-int.flavorcloud.com/api/Shipments";
 
     // Create the shipment request and make the service call
-    public function createShipment(){
-        $client = curlClient::instance();
-        $requestParams = _buildCreateShipmentRequestParams();
-        $response = $client->makeRequest("POST", FLCLShippingServiceURL, array('Content-Type:application/json'), $requestParams);
-         
+    public function createShipment()
+    {
+        $client = CurlClient::instance();
+        $requestParams = $this->_buildCreateShipmentRequestParams();
+        $response = $client->request("POST", self::FLCLShippingServiceURL, array('Content-Type:application/json'), $requestParams);
         return $response[0];
     }
 
     // get shipment by id
     public function getShipment()
     {
-        $shipmentID = 123456;
+        $shipmentID = 156;
+	$client = CurlClient::instance();
+        $requestParams = $this->_buildGetShipmentRequestParams($shipmentID);
+        $response = $client->request("GET", self::FLCLShippingServiceURL, array('Content-Type:application/json'), $requestParams);
+        print_r($response);
+        return $response[0];
         $client = curlClient::instance();
     }
 
@@ -45,7 +51,7 @@ class ShippingService{
             // use ISO standard currency code
             $params['currency'] = 'USD';
 
- 
+
             // Ship to information
             $params['shipto_name'] = 'Sheila Haque';
             $params['shipto_attention_name'] = 'Runway2Street';
@@ -77,22 +83,40 @@ class ShippingService{
                 'email' => 'globetrotter@flcl.com'
             );
 
-           // Package information
+            // Package information
             $package['quantity'] = "1";
             $package['sale_price'] = '99.99';
             $package['weight'] = '2';
             $package['description'] = 'Silk scarf';
             $params['pieces'][] = $package;
-            
+            $params['terms_of_trade'] = 'DDP';
+            $params['invoice_date'] = '2018-01-01 01:01:01';
+            $params['reason_for_export'] = 'sale to customer';
+            $params['carrier'] = 'UPS';
             // If you want insurance. We default to no insurance if this is not provided
             $params['insurance'] = 'Y';
 
             return $params;
-            
         }
         catch (Exception $e)
         {
-            echo 'Caught exception: ',  $e->getMessage();
+            echo 'Caught exception: ', $e->getMessage();
+        }
+    }
+
+    private function _buildGetShipmentRequestParams($shipmentID)
+    {
+        try
+        {
+            $params = array();
+            $params['appId'] = self::appID;
+            $params['restApiKey'] = self::restAPIKey;
+            $params['shipment_id'] = $shipmentID;
+            return $params;
+        }
+        catch (Exception $e)
+        {
+            echo 'Caught exception: ', $e->getMessage();
         }
     }
 
@@ -116,7 +140,7 @@ class ShippingService{
 
         //getting response from server 
         $response = curl_exec($ch);
-       
+
         if (curl_errno($ch))
         {
             echo "FLCLServcie API errors :- ", curl_error($ch);
@@ -129,5 +153,7 @@ class ShippingService{
 
         return json_decode($response, true);
     }
+
 }
+
 ?>

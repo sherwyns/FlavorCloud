@@ -19,8 +19,8 @@ class CurlClient
         if ($method == 'get') {
             $curlOptions[CURLOPT_HTTPGET] = 1;
             if (count($params) > 0) {
-                $encoded = self::encode($params);
-                $absUrl = "$absUrl?$encoded";
+                $encoded = self::encodeAsUrl($params);
+                $absUrl = "$absUrl"."/"."$encoded";
             }
         } else if ($method == 'post') {
             $curlOptions[CURLOPT_POST] = 1;
@@ -32,7 +32,7 @@ class CurlClient
             throw new Error("Unrecognized method {$method}");
         }
         // echo("<br><br>ABSOLUTE URL: " . $absUrl . "<br><br>");
-        $absUrl = Shippo_Util::utf8($absUrl);
+        $absUrl = $absUrl;
         $curlOptions[CURLOPT_URL] = $absUrl;
         $curlOptions[CURLOPT_RETURNTRANSFER] = true;
         $curlOptions[CURLOPT_CONNECTTIMEOUT] = 30;
@@ -86,6 +86,30 @@ class CurlClient
         }
         
         return implode("&", $r);
+    }
+/**
+     * @param array $arr An map of param keys to values.
+     * @returns string A querystring, essentially.
+     */
+    public static function encodeAsUrl($arr)
+    {
+        if (!is_array($arr))
+            return $arr;
+        
+        $r = array();
+        foreach ($arr as $k => $v) {
+            if (is_null($v))
+                continue;
+            
+            
+            if (is_array($v)) {
+                $r[] = self::encodeAsUrl($v);
+            } else {
+                $r[] = urlencode($v);
+            }
+        }
+        
+        return implode("/", $r);
     }
     /**
      * @param number $errno
